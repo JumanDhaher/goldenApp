@@ -18,15 +18,23 @@ class GoldDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final karatColor = AppColors.karatColors[item.karat] ?? AppColors.gold;
+
+    // Watch the list so we always get the latest version of this item after edits
+    final allItems = ref.watch(goldListProvider);
+    final liveItem = allItems.firstWhere(
+      (i) => i.id == item.id,
+      orElse: () => item,
+    );
+
+    final karatColor = AppColors.karatColors[liveItem.karat] ?? AppColors.gold;
     final pricePerGram = ref.watch(goldPriceProvider).price;
     final approxValue = pricePerGram *
-        item.weight *
-        (item.karat / 24.0);
+        liveItem.weight *
+        (liveItem.karat / 24.0);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(item.name),
+        title: Text(liveItem.name),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -34,7 +42,7 @@ class GoldDetailScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            onPressed: () => context.push(AppRoutes.editGold, extra: item),
+            onPressed: () => context.push(AppRoutes.editGold, extra: liveItem),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: AppColors.error),
@@ -46,7 +54,7 @@ class GoldDetailScreen extends ConsumerWidget {
         child: Column(
           children: [
             // Image
-            _buildImage(item),
+            _buildImage(liveItem),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -62,7 +70,7 @@ class GoldDetailScreen extends ConsumerWidget {
                         border: Border.all(color: karatColor),
                       ),
                       child: Text(
-                        '${item.karat} ${l10n.karat}',
+                        '${liveItem.karat} ${l10n.karat}',
                         style: TextStyle(
                           color: karatColor,
                           fontWeight: FontWeight.bold,
@@ -74,12 +82,12 @@ class GoldDetailScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
 
                   // Details grid
-                  _buildDetailsCard(context, l10n, karatColor, approxValue),
+                  _buildDetailsCard(context, l10n, karatColor, approxValue, liveItem),
                   const SizedBox(height: 16),
 
                   // Notes
-                  if (item.notes != null && item.notes!.isNotEmpty)
-                    _buildNotesCard(context, l10n),
+                  if (liveItem.notes != null && liveItem.notes!.isNotEmpty)
+                    _buildNotesCard(context, l10n, liveItem),
                 ],
               ),
             ),
@@ -123,6 +131,7 @@ class GoldDetailScreen extends ConsumerWidget {
     AppLocalizations l10n,
     Color karatColor,
     double approxValue,
+    GoldItem liveItem,
   ) {
     final theme = Theme.of(context);
     return Card(
@@ -131,10 +140,10 @@ class GoldDetailScreen extends ConsumerWidget {
         child: Column(
           children: [
             _buildDetailRow(context, Icons.scale, l10n.weight,
-                '${item.weight} ${l10n.gram}', karatColor),
+                '${liveItem.weight} ${l10n.gram}', karatColor),
             Divider(color: theme.dividerColor),
             _buildDetailRow(context, Icons.attach_money, l10n.purchasePrice,
-                '${item.purchasePrice.toStringAsFixed(0)} ${l10n.currency}',
+                '${liveItem.purchasePrice.toStringAsFixed(0)} ${l10n.currency}',
                 karatColor),
             Divider(color: theme.dividerColor),
             _buildDetailRow(
@@ -149,7 +158,7 @@ class GoldDetailScreen extends ConsumerWidget {
               context,
               Icons.calendar_today,
               l10n.purchaseDate,
-              DateFormat('dd MMM yyyy').format(item.purchaseDate),
+              DateFormat('dd MMM yyyy').format(liveItem.purchaseDate),
               karatColor,
             ),
           ],
@@ -184,7 +193,7 @@ class GoldDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNotesCard(BuildContext context, AppLocalizations l10n) {
+  Widget _buildNotesCard(BuildContext context, AppLocalizations l10n, GoldItem liveItem) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -200,7 +209,7 @@ class GoldDetailScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(item.notes!, style: Theme.of(context).textTheme.bodyLarge),
+            Text(liveItem.notes!, style: Theme.of(context).textTheme.bodyLarge),
           ],
         ),
       ),
