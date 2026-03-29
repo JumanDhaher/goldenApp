@@ -19,8 +19,7 @@ class GoldDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final karatColor = AppColors.karatColors[item.karat] ?? AppColors.gold;
-    final priceAsync = ref.watch(goldPriceProvider);
-    final pricePerGram = priceAsync.valueOrNull ?? 320.0;
+    final pricePerGram = ref.watch(goldPriceProvider).price;
     final approxValue = pricePerGram *
         item.weight *
         (item.karat / 24.0);
@@ -105,11 +104,16 @@ class GoldDetailScreen extends ConsumerWidget {
 
   Widget _buildNoImage() {
     return Container(
-      height: 200,
+      height: 220,
       width: double.infinity,
-      color: AppColors.darkCard,
-      child: const Center(
-        child: Text('🏅', style: TextStyle(fontSize: 80)),
+      color: Colors.black,
+      child: Center(
+        child: Image.asset(
+          'assets/images/gold_bars.png',
+          width: 160,
+          height: 160,
+          fit: BoxFit.contain,
+        ),
       ),
     );
   }

@@ -165,15 +165,31 @@ class AddGoldScreen extends ConsumerWidget {
   }
 
   Widget _imagePlaceholder(AppLocalizations l10n) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Stack(
+      alignment: Alignment.center,
       children: [
-        const Icon(Icons.add_a_photo_outlined,
-            size: 40, color: AppColors.gold),
-        const SizedBox(height: 8),
-        Text(
-          l10n.addPhoto,
-          style: const TextStyle(color: AppColors.gold),
+        Opacity(
+          opacity: 0.35,
+          child: Image.asset(
+            'assets/images/gold_bars.png',
+            width: 90,
+            height: 90,
+            fit: BoxFit.contain,
+          ),
+        ),
+        Positioned(
+          bottom: 18,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.add_a_photo_outlined,
+                  size: 16, color: AppColors.gold),
+              const SizedBox(width: 4),
+              Text(l10n.addPhoto,
+                  style: const TextStyle(
+                      color: AppColors.gold, fontSize: 13)),
+            ],
+          ),
         ),
       ],
     );

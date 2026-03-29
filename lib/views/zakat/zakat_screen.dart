@@ -9,10 +9,9 @@ class ZakatScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final zakatInfo = ref.watch(zakatInfoProvider);
-    final priceAsync = ref.watch(goldPriceProvider);
-    final theme = Theme.of(context);
+    final l10n       = AppLocalizations.of(context)!;
+    final zakatInfo  = ref.watch(zakatInfoProvider);
+    final priceState = ref.watch(goldPriceProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.zakat)),
@@ -25,7 +24,7 @@ class ZakatScreen extends ConsumerWidget {
             const SizedBox(height: 16),
 
             // Gold Price Card
-            _buildPriceCard(context, l10n, ref, priceAsync),
+            _buildPriceCard(context, l10n, ref, priceState),
             const SizedBox(height: 16),
 
             // Stats
@@ -103,8 +102,11 @@ class ZakatScreen extends ConsumerWidget {
     BuildContext context,
     AppLocalizations l10n,
     WidgetRef ref,
-    AsyncValue<double> priceAsync,
+    GoldPriceState priceState,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final goldColor = isDark ? AppColors.goldLight : AppColors.lightGold;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -113,51 +115,57 @@ class ZakatScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.trending_up, color: AppColors.gold),
+                Icon(Icons.trending_up, color: goldColor),
                 const SizedBox(width: 8),
                 Text(l10n.currentGoldPrice,
                     style: Theme.of(context).textTheme.titleMedium),
+                const Spacer(),
+                if (priceState.lastUpdated != null)
+                  Text(
+                    '${l10n.priceUpdated} ${priceState.lastUpdated}',
+                    style: TextStyle(
+                        fontSize: 10,
+                        color: isDark
+                            ? AppColors.darkTextMuted
+                            : AppColors.lightTextMuted),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
-            priceAsync.when(
-              data: (price) => Text(
-                '$price ${l10n.currency} / ${l10n.gram}',
-                style: const TextStyle(
-                  color: AppColors.gold,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              loading: () => const CircularProgressIndicator(),
-              error: (_, __) => const Text('--'),
-            ),
+            priceState.isLoading
+                ? const LinearProgressIndicator(color: AppColors.gold)
+                : Text(
+                    '${priceState.price.toStringAsFixed(1)} ${l10n.currency} / ${l10n.gram}',
+                    style: TextStyle(
+                      color: goldColor,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
             const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => ref
-                        .read(goldPriceProvider.notifier)
-                        .fetchFromApi(),
+                    onPressed: () =>
+                        ref.read(goldPriceProvider.notifier).fetchFromApi(),
                     icon: const Icon(Icons.refresh, size: 16),
                     label: Text(l10n.updatePrice),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.gold,
-                      side: const BorderSide(color: AppColors.gold),
+                      foregroundColor: goldColor,
+                      side: BorderSide(color: goldColor),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () =>
-                        _showPriceDialog(context, l10n, ref),
+                    onPressed: () => _showPriceDialog(context, l10n, ref),
                     icon: const Icon(Icons.edit, size: 16),
                     label: Text(l10n.enterPriceManually),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.gold,
-                      side: const BorderSide(color: AppColors.gold),
+                      foregroundColor: goldColor,
+                      side: BorderSide(color: goldColor),
                     ),
                   ),
                 ),
@@ -337,7 +345,7 @@ class ZakatScreen extends ConsumerWidget {
             onPressed: () {
               final price = double.tryParse(controller.text);
               if (price != null && price > 0) {
-                ref.read(goldPriceProvider.notifier).setPrice(price);
+                ref.read(goldPriceProvider.notifier).setManualPrice(price);
                 Navigator.pop(ctx);
               }
             },

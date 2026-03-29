@@ -6,121 +6,140 @@ import '../../../data/models/gold_item.dart';
 
 class GoldCard extends StatelessWidget {
   final GoldItem item;
+  final double goldPrice24;
   final VoidCallback onTap;
-  final VoidCallback? onDelete;
 
   const GoldCard({
     super.key,
     required this.item,
+    required this.goldPrice24,
     required this.onTap,
-    this.onDelete,
   });
 
   String _getTypeIcon() {
     switch (item.type) {
-      case 'ring':
-        return '💍';
-      case 'bar':
-        return '🏅';
-      case 'necklace':
-        return '📿';
-      default:
-        return '✨';
+      case 'ring':     return '💍';
+      case 'bar':      return '🏅';
+      case 'necklace': return '📿';
+      default:         return '✨';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final karatColor =
-        AppColors.karatColors[item.karat] ?? AppColors.gold;
-    final theme = Theme.of(context);
+    final l10n       = AppLocalizations.of(context)!;
+    final karatColor = AppColors.karatColors[item.karat] ?? AppColors.gold;
+    final theme      = Theme.of(context);
+    final isDark     = theme.brightness == Brightness.dark;
+
+    // القيمة الحالية بسعر السوق
+    final currentValue = item.weight * (item.karat / 24.0) * goldPrice24;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: theme.cardTheme.color,
-          borderRadius: BorderRadius.circular(16),
+          color: isDark ? AppColors.darkCard : AppColors.lightSurface2,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: karatColor.withOpacity(0.3),
             width: 1,
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              // Image or icon
+              // صورة أو أيقونة
               _buildImage(karatColor),
-              const SizedBox(width: 16),
-              // Info
+              const SizedBox(width: 14),
+
+              // معلومات
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // الاسم + العيار
                     Row(
                       children: [
-                        Text(
-                          item.name,
-                          style: theme.textTheme.titleMedium,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Expanded(
+                          child: Text(
+                            item.name,
+                            style: theme.textTheme.titleMedium,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        const Spacer(),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
+                              horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: karatColor.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             '${item.karat}K',
                             style: TextStyle(
                               color: karatColor,
                               fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                              fontSize: 12,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 5),
+
+                    // الوزن + النوع
                     Row(
                       children: [
                         Text(
-                          '${item.weight} ${l10n.grams}',
+                          '${item.weight} ${l10n.gram}',
                           style: theme.textTheme.bodyMedium,
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 8),
                         Text(
                           _getTypeIcon(),
-                          style: const TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 14),
                         ),
                       ],
                     ),
-                    if (item.purchasePrice > 0) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        '${item.purchasePrice.toStringAsFixed(0)} ${l10n.currency}',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: karatColor,
-                          fontWeight: FontWeight.w600,
+                    const SizedBox(height: 4),
+
+                    // القيمة الحالية بسعر السوق
+                    Row(
+                      children: [
+                        Text(
+                          '${currentValue.toStringAsFixed(0)} ${l10n.currency}',
+                          style: TextStyle(
+                            color: karatColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        Text(
+                          isDark
+                              ? '· ${l10n.totalValue}'
+                              : '· ${l10n.totalValue}',
+                          style: TextStyle(
+                            color: isDark
+                                ? AppColors.darkTextMuted
+                                : AppColors.lightTextMuted,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-              // Arrow
-              Icon(
-                Icons.chevron_right,
-                color: theme.textTheme.bodyMedium?.color,
-              ),
+
+              Icon(Icons.chevron_right,
+                  color: isDark
+                      ? AppColors.darkTextMuted
+                      : AppColors.lightTextMuted),
             ],
           ),
         ),
@@ -131,11 +150,11 @@ class GoldCard extends StatelessWidget {
   Widget _buildImage(Color karatColor) {
     if (item.imagePath != null && item.imagePath!.isNotEmpty) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         child: Image.file(
           File(item.imagePath!),
-          width: 60,
-          height: 60,
+          width: 58,
+          height: 58,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => _buildIconBox(karatColor),
         ),
@@ -146,20 +165,18 @@ class GoldCard extends StatelessWidget {
 
   Widget _buildIconBox(Color karatColor) {
     return Container(
-      width: 60,
-      height: 60,
+      width: 58,
+      height: 58,
       decoration: BoxDecoration(
-        color: karatColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: karatColor.withOpacity(0.3),
-          width: 1,
-        ),
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: karatColor.withOpacity(0.4)),
       ),
-      child: Center(
-        child: Text(
-          _getTypeIcon(),
-          style: const TextStyle(fontSize: 26),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(9),
+        child: Image.asset(
+          'assets/images/gold_bars.png',
+          fit: BoxFit.contain,
         ),
       ),
     );
