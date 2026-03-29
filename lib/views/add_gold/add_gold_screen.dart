@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:golden_app/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/widgets/gold_placeholder.dart';
 import '../../data/models/gold_item.dart';
 import '../../viewmodels/add_gold_viewmodel.dart';
 
@@ -165,33 +166,9 @@ class AddGoldScreen extends ConsumerWidget {
   }
 
   Widget _imagePlaceholder(AppLocalizations l10n) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Opacity(
-          opacity: 0.35,
-          child: Image.asset(
-            'assets/images/gold_bars.png',
-            width: 90,
-            height: 90,
-            fit: BoxFit.contain,
-          ),
-        ),
-        Positioned(
-          bottom: 18,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.add_a_photo_outlined,
-                  size: 16, color: AppColors.gold),
-              const SizedBox(width: 4),
-              Text(l10n.addPhoto,
-                  style: const TextStyle(
-                      color: AppColors.gold, fontSize: 13)),
-            ],
-          ),
-        ),
-      ],
+    return GoldPlaceholder(
+      size: GoldPlaceholderSize.medium,
+      label: l10n.addPhoto,
     );
   }
 

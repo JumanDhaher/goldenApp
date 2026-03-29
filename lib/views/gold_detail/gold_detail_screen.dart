@@ -6,6 +6,7 @@ import 'package:golden_app/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/router/app_router.dart';
+import '../../core/widgets/gold_placeholder.dart';
 import '../../data/models/gold_item.dart';
 import '../../viewmodels/gold_list_viewmodel.dart';
 import '../../viewmodels/zakat_viewmodel.dart';
@@ -111,19 +112,7 @@ class GoldDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildNoImage() {
-    return Container(
-      height: 220,
-      width: double.infinity,
-      color: Colors.black,
-      child: Center(
-        child: Image.asset(
-          'assets/images/gold_bars.png',
-          width: 160,
-          height: 160,
-          fit: BoxFit.contain,
-        ),
-      ),
-    );
+    return const GoldPlaceholder(size: GoldPlaceholderSize.large);
   }
 
   Widget _buildDetailsCard(

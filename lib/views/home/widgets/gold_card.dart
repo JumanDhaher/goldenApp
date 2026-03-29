@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:golden_app/l10n/app_localizations.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/gold_placeholder.dart';
 import '../../../data/models/gold_item.dart';
 
 class GoldCard extends StatelessWidget {
@@ -164,21 +165,9 @@ class GoldCard extends StatelessWidget {
   }
 
   Widget _buildIconBox(Color karatColor) {
-    return Container(
-      width: 58,
-      height: 58,
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: karatColor.withOpacity(0.4)),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(9),
-        child: Image.asset(
-          'assets/images/gold_bars.png',
-          fit: BoxFit.contain,
-        ),
-      ),
+    return GoldPlaceholder(
+      size: GoldPlaceholderSize.small,
+      accentColor: karatColor,
     );
   }
 }
