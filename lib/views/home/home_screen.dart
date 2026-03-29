@@ -1,8 +1,10 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:golden_app/l10n/app_localizations.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/router/app_router.dart';
 import '../../core/utils/pdf_export_service.dart';
@@ -16,12 +18,12 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n       = AppLocalizations.of(context)!;
-    final goldItems  = ref.watch(goldListProvider);
-    final zakatInfo  = ref.watch(zakatInfoProvider);
+    final l10n = AppLocalizations.of(context);
+    final goldItems = ref.watch(goldListProvider);
+    final zakatInfo = ref.watch(zakatInfoProvider);
     final priceState = ref.watch(goldPriceProvider);
-    final locale     = ref.watch(localeProvider);
-    final isAr       = locale.languageCode == 'ar';
+    final locale = ref.watch(localeProvider);
+    final isAr = locale.languageCode == 'ar';
 
     return Scaffold(
       appBar: AppBar(
@@ -40,33 +42,21 @@ class HomeScreen extends ConsumerWidget {
           : CustomScrollView(
               slivers: [
                 // ── شريط أسعار العيارات (نفس الموقع) ──
-                SliverToBoxAdapter(
-                  child: _buildGoldPriceBar(
-                      context, l10n, priceState, ref, isAr),
-                ),
+                SliverToBoxAdapter(child: _buildGoldPriceBar(context, l10n, priceState, ref, isAr)),
                 // ── بطاقة الملخص ──
-                SliverToBoxAdapter(
-                  child: _buildSummaryCard(
-                      context, l10n, zakatInfo, priceState, isAr),
-                ),
+                SliverToBoxAdapter(child: _buildSummaryCard(context, l10n, zakatInfo, priceState, isAr)),
                 // ── قائمة الذهب ──
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                   sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final item = goldItems[index];
-                        return GoldCard(
-                          item: item,
-                          goldPrice24: priceState.price,
-                          onTap: () => context.push(
-                            AppRoutes.goldDetail,
-                            extra: item,
-                          ),
-                        );
-                      },
-                      childCount: goldItems.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final item = goldItems[index];
+                      return GoldCard(
+                        item: item,
+                        goldPrice24: priceState.price,
+                        onTap: () => context.push(AppRoutes.goldDetail, extra: item),
+                      );
+                    }, childCount: goldItems.length),
                   ),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -89,10 +79,8 @@ class HomeScreen extends ConsumerWidget {
     bool isAr,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final barBg  = isDark
-        ? AppColors.darkSurface2
-        : AppColors.gold.withOpacity(0.08);
-    final textColor  = isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted;
+    final barBg = isDark ? AppColors.darkSurface2 : AppColors.gold.withOpacity(0.08);
+    final textColor = isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted;
     final valueColor = isDark ? AppColors.goldLight : AppColors.lightGold;
 
     return Container(
@@ -111,17 +99,10 @@ class HomeScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '${isAr ? 'عيار' : 'K'} $k',
-                          style: TextStyle(fontSize: 10, color: textColor),
-                        ),
+                        Text('${isAr ? 'عيار' : 'K'} $k', style: TextStyle(fontSize: 10, color: textColor)),
                         Text(
                           '${kPrice.toStringAsFixed(1)} ${isAr ? 'ريال' : 'SAR'}',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: valueColor,
-                          ),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: valueColor),
                         ),
                       ],
                     ),
@@ -138,16 +119,13 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 priceState.isLoading
                     ? const SizedBox(
-                        width: 14, height: 14,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 1.5, color: AppColors.gold),
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 1.5, color: AppColors.gold),
                       )
                     : Icon(Icons.refresh, size: 16, color: textColor),
                 if (priceState.lastUpdated != null)
-                  Text(
-                    priceState.lastUpdated!,
-                    style: TextStyle(fontSize: 9, color: textColor),
-                  ),
+                  Text(priceState.lastUpdated!, style: TextStyle(fontSize: 9, color: textColor)),
               ],
             ),
           ),
@@ -174,36 +152,25 @@ class HomeScreen extends ConsumerWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.gold.withOpacity(0.35),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: AppColors.gold.withOpacity(0.35), blurRadius: 20, offset: const Offset(0, 6))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             l10n.totalGold,
-            style: const TextStyle(
-                color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500),
+            style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 6),
           Text(
             '${zakatInfo.totalWeightGrams.toStringAsFixed(2)} ${l10n.gram}',
-            style: const TextStyle(
-                color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
-                child: _summaryItem(
-                  l10n.totalValue,
-                  '${zakatInfo.totalValue.toStringAsFixed(0)} ${l10n.currency}',
-                ),
+                child: _summaryItem(l10n.totalValue, '${zakatInfo.totalValue.toStringAsFixed(0)} ${l10n.currency}'),
               ),
               Container(width: 1, height: 36, color: Colors.black26),
               Expanded(
@@ -230,26 +197,23 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _summaryItem(String label, String value,
-      {bool center = false, bool end = false}) {
+  Widget _summaryItem(String label, String value, {bool center = false, bool end = false}) {
     final align = end
         ? CrossAxisAlignment.end
         : center
-            ? CrossAxisAlignment.center
-            : CrossAxisAlignment.start;
+        ? CrossAxisAlignment.center
+        : CrossAxisAlignment.start;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6),
       child: Column(
         crossAxisAlignment: align,
         children: [
-          Text(label,
-              style: const TextStyle(color: Colors.black54, fontSize: 10)),
+          Text(label, style: const TextStyle(color: Colors.black54, fontSize: 10)),
           const SizedBox(height: 2),
-          Text(value,
-              style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );
@@ -267,11 +231,9 @@ class HomeScreen extends ConsumerWidget {
           // Title
           Text(
             l10n.noGoldYet,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.gold,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: AppColors.gold, fontWeight: FontWeight.w600, letterSpacing: 0.5),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 10),
@@ -279,10 +241,7 @@ class HomeScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 48),
             child: Text(
               l10n.addFirstGold,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.darkTextMuted,
-                    height: 1.6,
-                  ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.darkTextMuted, height: 1.6),
               textAlign: TextAlign.center,
             ),
           ),
@@ -297,10 +256,7 @@ class HomeScreen extends ConsumerWidget {
                 width: 60,
                 height: 1,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                    AppColors.gold.withOpacity(0),
-                    AppColors.gold.withOpacity(0.5),
-                  ]),
+                  gradient: LinearGradient(colors: [AppColors.gold.withOpacity(0), AppColors.gold.withOpacity(0.5)]),
                 ),
               ),
               const SizedBox(width: 8),
@@ -317,10 +273,7 @@ class HomeScreen extends ConsumerWidget {
                 width: 60,
                 height: 1,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                    AppColors.gold.withOpacity(0.5),
-                    AppColors.gold.withOpacity(0),
-                  ]),
+                  gradient: LinearGradient(colors: [AppColors.gold.withOpacity(0.5), AppColors.gold.withOpacity(0)]),
                 ),
               ),
               const SizedBox(width: 8),
@@ -333,32 +286,21 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _dot() => Container(
-        width: 4,
-        height: 4,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: AppColors.gold.withOpacity(0.4),
-        ),
-      );
+    width: 4,
+    height: 4,
+    decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.gold.withOpacity(0.4)),
+  );
 
   // ── تصدير PDF ─────────────────────────────────────────────
-  Future<void> _exportPdf(
-      BuildContext context, WidgetRef ref, bool isAr) async {
-    final items      = ref.read(goldListProvider);
+  Future<void> _exportPdf(BuildContext context, WidgetRef ref, bool isAr) async {
+    final items = ref.read(goldListProvider);
     final priceState = ref.read(goldPriceProvider);
     if (items.isEmpty) return;
     try {
-      await PdfExportService.exportAndPrint(
-        items: items,
-        goldPrice24: priceState.price,
-        isAr: isAr,
-        context: context,
-      );
+      await PdfExportService.exportAndPrint(items: items, goldPrice24: priceState.price, isAr: isAr, context: context);
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('خطأ: $e')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ: $e')));
       }
     }
   }
@@ -370,8 +312,7 @@ class _EmptyStateIcon extends StatefulWidget {
   State<_EmptyStateIcon> createState() => _EmptyStateIconState();
 }
 
-class _EmptyStateIconState extends State<_EmptyStateIcon>
-    with SingleTickerProviderStateMixin {
+class _EmptyStateIconState extends State<_EmptyStateIcon> with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double> _pulse;
   late Animation<double> _rotate;
@@ -379,16 +320,9 @@ class _EmptyStateIconState extends State<_EmptyStateIcon>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 4),
-    )..repeat();
-    _pulse = Tween<double>(begin: 0.92, end: 1.08).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
-    _rotate = Tween<double>(begin: 0, end: 2 * math.pi).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.linear),
-    );
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
+    _pulse = Tween<double>(begin: 0.92, end: 1.08).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+    _rotate = Tween<double>(begin: 0, end: 2 * math.pi).animate(CurvedAnimation(parent: _ctrl, curve: Curves.linear));
   }
 
   @override
@@ -413,19 +347,13 @@ class _EmptyStateIconState extends State<_EmptyStateIcon>
                 angle: _rotate.value,
                 child: CustomPaint(
                   size: const Size(170, 170),
-                  painter: _DashedRingPainter(
-                    color: AppColors.gold.withOpacity(0.18),
-                    dashCount: 24,
-                  ),
+                  painter: _DashedRingPainter(color: AppColors.gold.withOpacity(0.18), dashCount: 24),
                 ),
               ),
               // Middle static ring
               CustomPaint(
                 size: const Size(138, 138),
-                painter: _SolidRingPainter(
-                  color: AppColors.gold.withOpacity(0.25),
-                  strokeWidth: 1,
-                ),
+                painter: _SolidRingPainter(color: AppColors.gold.withOpacity(0.25), strokeWidth: 1),
               ),
               // Inner glow circle
               Transform.scale(
@@ -436,25 +364,16 @@ class _EmptyStateIconState extends State<_EmptyStateIcon>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
-                      colors: [
-                        AppColors.gold.withOpacity(0.15),
-                        AppColors.gold.withOpacity(0.04),
-                        Colors.transparent,
-                      ],
+                      colors: [AppColors.gold.withOpacity(0.15), AppColors.gold.withOpacity(0.04), Colors.transparent],
                       stops: const [0.0, 0.6, 1.0],
                     ),
-                    border: Border.all(
-                      color: AppColors.gold.withOpacity(0.35),
-                      width: 1.5,
-                    ),
+                    border: Border.all(color: AppColors.gold.withOpacity(0.35), width: 1.5),
                   ),
                 ),
               ),
               // Gold icon in center
-              CustomPaint(
-                size: const Size(52, 52),
-                painter: _GoldBarsPainter(),
-              ),
+              Image.asset('assets/images/gold_bars.png', width: 52, height: 52),
+              //  CustomPaint(size: const Size(52, 52), painter: _GoldBarsPainter()),
               // 4 corner diamonds
               ..._cornerDots(),
             ],
@@ -477,13 +396,7 @@ class _EmptyStateIconState extends State<_EmptyStateIcon>
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: AppColors.gold.withOpacity(0.5),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.gold.withOpacity(0.4),
-                blurRadius: 6,
-                spreadRadius: 1,
-              ),
-            ],
+            boxShadow: [BoxShadow(color: AppColors.gold.withOpacity(0.4), blurRadius: 6, spreadRadius: 1)],
           ),
         ),
       );
@@ -574,10 +487,7 @@ class _GoldBarsPainter extends CustomPainter {
       canvas.drawRRect(RRect.fromRectAndRadius(r, const Radius.circular(3)), paint);
       // top shine
       canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(r.left + 4, r.top + 2, r.width - 8, 4),
-          const Radius.circular(2),
-        ),
+        RRect.fromRectAndRadius(Rect.fromLTWH(r.left + 4, r.top + 2, r.width - 8, 4), const Radius.circular(2)),
         Paint()..color = Colors.white.withOpacity(0.25),
       );
       // outline
